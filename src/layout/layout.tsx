@@ -92,7 +92,9 @@ const DashboardLayout: React.FC<LayoutProps> = ({ children }) => {
               <div className="w-6 h-6 flex items-center justify-center rounded-full text-white bg-gradient-to-r from-[#5C6670] to-[#131316] text-sm">
                 OJ
               </div>
-              <MenuIcon />
+              <div className="pr-2">
+                <MenuIcon />
+              </div>
             </div>
           </div>
         </div>
