@@ -5,7 +5,7 @@ import {
   DialogPanel,
   Transition,
 } from "@headlessui/react";
-import { CaretDownIcon, CloseIcon, RadioDropdown } from "mainstack-library";
+import { CloseIcon, RadioDropdown } from "mainstack-library";
 import { TransactionStatus, TransactionType } from "@/redux/transactions/types";
 import { useTransactions } from "@/contexts/transactions.context";
 import { formatISODate } from "@/utils/date-formatter";
@@ -149,7 +149,7 @@ export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
                                   : "bg-white text-gray-800 border-gray-700"
                               }`}
                               onClick={() =>
-                                setSelectedTimeframe((prev) =>
+                                setSelectedTimeframe(() =>
                                   selectedTimeframe === timeframe.id
                                     ? null
                                     : timeframe.id
