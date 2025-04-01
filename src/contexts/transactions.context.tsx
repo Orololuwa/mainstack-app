@@ -10,7 +10,7 @@ import { useGetTransactionsQuery } from "@/redux/transactions/transactions.servi
 import { TransactionResponse } from "@/redux/transactions/types";
 
 type FilterOptions = { label: string; value: string }[];
-interface TransactionsContextType {
+export interface TransactionsContextType {
   data: TransactionResponse | undefined;
   isFetching: boolean;
   typeFilter: FilterOptions;
