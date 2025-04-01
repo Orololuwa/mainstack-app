@@ -1,18 +1,47 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogPanel,
   Transition,
 } from "@headlessui/react";
-import { CloseIcon } from "mainstack-library";
+import { CaretDownIcon, CloseIcon, RadioDropdown } from "mainstack-library";
+import { TransactionStatus, TransactionType } from "@/redux/transactions/types";
+import { useTransactions } from "@/contexts/transactions.context";
 
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const txTypeOptions = [
+  { label: "Withdrawals", value: TransactionType.WITHDRAWAL },
+  { label: "Deposit", value: TransactionType.DEPOSIT },
+];
+const txStatusOptions = [
+  { label: "Pending", value: TransactionStatus.PENDING },
+  { label: "Successful", value: TransactionStatus.SUCCESSFUL },
+  { label: "Failed", value: TransactionStatus.FAILED },
+];
+
 export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
+  const { typeFilter, statusFilter, setTypeFilter, setStatusFilter } =
+    useTransactions();
+  const [dateRange, setDateRange] = useState({
+    startDate: "17 Jul 2023",
+    endDate: "17 Aug 2023",
+  });
+
+  const [selectedTimeframe, setSelectedTimeframe] = useState<string | null>(
+    null
+  );
+
+  const timeframes = [
+    { id: "today", label: "Today" },
+    { id: "last7days", label: "Last 7 days" },
+    { id: "thismonth", label: "This month" },
+    { id: "last3months", label: "Last 3 months" },
+  ];
   return (
     <>
       <Transition
@@ -60,8 +89,66 @@ export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
                         </button>
                       </div>
                     </div>
-                    <div className="relative flex-1 px-4 sm:px-6">
-                      ...filters
+                    <div className="relative flex-1 px-1">
+                      <div className="px-4 py-3 max-w-xl">
+                        <div className="flex gap-1 mb-6">
+                          {timeframes.map((timeframe) => (
+                            <button
+                              key={timeframe.id}
+                              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border ${
+                                selectedTimeframe === timeframe.id
+                                  ? "bg-gray-100 text-gray-800 border-gray-100"
+                                  : "bg-white text-gray-800 border-gray-700"
+                              }`}
+                              onClick={() =>
+                                setSelectedTimeframe((prev) =>
+                                  prev === null ? timeframe.id : null
+                                )
+                              }
+                            >
+                              {timeframe.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="text-base font-medium mb-2">
+                            Date Range
+                          </h3>
+                          <div className="flex gap-3">
+                            <button className="flex items-center justify-between bg-gray-100 rounded-lg px-4 py-3 w-full">
+                              <span>{dateRange.startDate}</span>
+                              <CaretDownIcon />
+                            </button>
+                            <button className="flex items-center justify-between bg-gray-100 rounded-lg px-4 py-3 w-full">
+                              <span>{dateRange.endDate}</span>
+                              <CaretDownIcon />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold pb-2">
+                            Transaction Type
+                          </h3>
+                          <RadioDropdown
+                            options={txTypeOptions}
+                            defaultSelectedOptions={typeFilter}
+                            onChange={(selected) => setTypeFilter(selected)}
+                          />
+                        </div>
+
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold pb-2">
+                            Transaction Status
+                          </h3>
+                          <RadioDropdown
+                            options={txStatusOptions}
+                            defaultSelectedOptions={statusFilter}
+                            onChange={(selected) => setStatusFilter(selected)}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </DialogPanel>
