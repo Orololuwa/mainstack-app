@@ -98,7 +98,7 @@ function WalletSkeleton() {
         <div className="space-y-8">
           {Array(4)
             .fill(0)
-            .map((i) => (
+            .map((_, i) => (
               <div key={i}>
                 <div className="h-4 w-32 bg-gray-200 rounded mb-2"></div>
                 <div className="h-8 w-48 bg-gray-200 rounded"></div>

@@ -17,6 +17,16 @@ export interface TransactionsContextType {
   setTypeFilter: React.Dispatch<React.SetStateAction<FilterOptions>>;
   statusFilter: FilterOptions;
   setStatusFilter: React.Dispatch<React.SetStateAction<FilterOptions>>;
+  dateRange: {
+    startDate: string;
+    endDate: string;
+  };
+  setDateRange: React.Dispatch<
+    React.SetStateAction<{
+      startDate: string;
+      endDate: string;
+    }>
+  >;
 }
 
 export const TransactionsContext = createContext<
@@ -32,6 +42,11 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [typeFilter, setTypeFilter] = useState<FilterOptions>([]);
   const [statusFilter, setStatusFilter] = useState<FilterOptions>([]);
 
+  const [dateRange, setDateRange] = useState({
+    startDate: "",
+    endDate: "",
+  });
+
   const filteredData = useMemo(() => {
     if (!data) return [];
 
@@ -43,16 +58,17 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         statusFilter.length === 0 ||
         statusFilter.some((filter) => filter.value === transaction.status);
 
-      return matchesType && matchesStatus;
-    });
-  }, [data, typeFilter, statusFilter]);
+      const transactionDate = new Date(transaction.date);
+      const matchesDateRange =
+        (!dateRange.startDate && !dateRange.endDate) ||
+        ((!dateRange.startDate ||
+          transactionDate >= new Date(dateRange.startDate)) &&
+          (!dateRange.endDate ||
+            transactionDate <= new Date(dateRange.endDate)));
 
-  console.log({
-    data,
-    isFetching,
-    typeFilter,
-    statusFilter,
-  });
+      return matchesType && matchesStatus && matchesDateRange;
+    });
+  }, [data, typeFilter, statusFilter, dateRange]);
 
   return (
     <TransactionsContext.Provider
@@ -63,6 +79,8 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
         setTypeFilter,
         statusFilter,
         setStatusFilter,
+        dateRange,
+        setDateRange,
       }}
     >
       {children}

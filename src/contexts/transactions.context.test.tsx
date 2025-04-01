@@ -11,13 +11,19 @@ import { Provider } from "react-redux";
 import { transactionsApi } from "@/redux/transactions/transactions.service";
 import { setupApiStore } from "@/tests/mock-store";
 import fetchMock from "jest-fetch-mock";
+import { formatISODate } from "@/utils/date-formatter";
 
 fetchMock.enableMocks();
 
 const mockData = [
-  { type: "deposit", status: "successful", amount: 500 },
-  { type: "withdrawal", status: "failed", amount: 300 },
-  { type: "deposit", status: "pending", amount: 200 },
+  {
+    type: "deposit",
+    status: "successful",
+    amount: 500,
+    date: formatISODate(new Date(Date.now()).toDateString()),
+  },
+  { type: "withdrawal", status: "failed", amount: 300, date: "2022-03-03" },
+  { type: "deposit", status: "pending", amount: 200, date: "2022-03-03" },
 ];
 
 describe("TransactionsProvider", () => {
@@ -75,8 +81,13 @@ describe("TransactionsProvider", () => {
 
     await waitFor(() => {
       expect(result.current?.data).toEqual([
-        { type: "deposit", status: "successful", amount: 500 },
-        { type: "deposit", status: "pending", amount: 200 },
+        {
+          type: "deposit",
+          status: "successful",
+          amount: 500,
+          date: formatISODate(new Date(Date.now()).toDateString()),
+        },
+        { type: "deposit", status: "pending", amount: 200, date: "2022-03-03" },
       ]);
     });
   });
@@ -110,7 +121,52 @@ describe("TransactionsProvider", () => {
 
     await waitFor(() => {
       expect(result.current?.data).toEqual([
-        { type: "deposit", status: "successful", amount: 500 },
+        {
+          type: "deposit",
+          status: "successful",
+          amount: 500,
+          date: formatISODate(new Date(Date.now()).toDateString()),
+        },
+      ]);
+    });
+  });
+
+  it("should properly filter data by transaction date", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Provider store={store}>
+        <TransactionsProvider>{children}</TransactionsProvider>
+      </Provider>
+    );
+
+    let result: {
+      current: TransactionsContextType | undefined;
+    } = { current: undefined };
+    await act(async () => {
+      const rendered = renderHook(() => React.useContext(TransactionsContext), {
+        wrapper,
+      });
+      result = rendered.result;
+    });
+
+    await waitFor(() => {
+      expect(result.current?.data).toBeDefined();
+    });
+
+    act(() => {
+      result.current?.setDateRange({
+        startDate: formatISODate(new Date(Date.now()).toDateString()),
+        endDate: formatISODate(new Date(Date.now()).toDateString()),
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current?.data).toEqual([
+        {
+          type: "deposit",
+          status: "successful",
+          amount: 500,
+          date: formatISODate(new Date(Date.now()).toDateString()),
+        },
       ]);
     });
   });

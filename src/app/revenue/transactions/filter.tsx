@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +8,8 @@ import {
 import { CaretDownIcon, CloseIcon, RadioDropdown } from "mainstack-library";
 import { TransactionStatus, TransactionType } from "@/redux/transactions/types";
 import { useTransactions } from "@/contexts/transactions.context";
+import { formatISODate } from "@/utils/date-formatter";
+import moment from "moment";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -25,12 +27,14 @@ const txStatusOptions = [
 ];
 
 export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
-  const { typeFilter, statusFilter, setTypeFilter, setStatusFilter } =
-    useTransactions();
-  const [dateRange, setDateRange] = useState({
-    startDate: "17 Jul 2023",
-    endDate: "17 Aug 2023",
-  });
+  const {
+    typeFilter,
+    statusFilter,
+    setTypeFilter,
+    setStatusFilter,
+    dateRange,
+    setDateRange,
+  } = useTransactions();
 
   const [selectedTimeframe, setSelectedTimeframe] = useState<string | null>(
     null
@@ -42,6 +46,50 @@ export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
     { id: "thismonth", label: "This month" },
     { id: "last3months", label: "Last 3 months" },
   ];
+
+  const getDateRange = (timeframeId: string) => {
+    const now = moment();
+    switch (timeframeId) {
+      case "today":
+        return {
+          startDate: now.startOf("day"),
+          endDate: now.endOf("day"),
+        };
+      case "last7days":
+        return {
+          startDate: now.subtract(7, "days").startOf("day"),
+          endDate: moment().endOf("day"),
+        };
+      case "thismonth":
+        return {
+          startDate: now.startOf("month"),
+          endDate: now.endOf("month"),
+        };
+      case "last3months":
+        return {
+          startDate: now.subtract(3, "months").startOf("month"),
+          endDate: moment().endOf("month"),
+        };
+      default:
+        return {
+          startDate: "",
+          endDate: "",
+        };
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTimeframe) {
+      const range = getDateRange(selectedTimeframe);
+      setDateRange({
+        startDate: formatISODate(range.startDate.toLocaleString()),
+        endDate: formatISODate(range.endDate.toLocaleString()),
+      });
+    } else {
+      setDateRange({ startDate: "", endDate: "" });
+    }
+  }, [selectedTimeframe]);
+
   return (
     <>
       <Transition
@@ -102,7 +150,9 @@ export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
                               }`}
                               onClick={() =>
                                 setSelectedTimeframe((prev) =>
-                                  prev === null ? timeframe.id : null
+                                  selectedTimeframe === timeframe.id
+                                    ? null
+                                    : timeframe.id
                                 )
                               }
                             >
@@ -116,14 +166,30 @@ export default function FilterDrawer({ isOpen, onClose }: DrawerProps) {
                             Date Range
                           </h3>
                           <div className="flex gap-3">
-                            <button className="flex items-center justify-between bg-gray-100 rounded-lg px-4 py-3 w-full">
-                              <span>{dateRange.startDate}</span>
-                              <CaretDownIcon />
-                            </button>
-                            <button className="flex items-center justify-between bg-gray-100 rounded-lg px-4 py-3 w-full">
-                              <span>{dateRange.endDate}</span>
-                              <CaretDownIcon />
-                            </button>
+                            <div className="relative w-full flex justify-between gap-2">
+                              <input
+                                type="date"
+                                className="cursor-pointer flex items-center justify-between bg-gray-100 rounded-lg px-4 py-3 w-full"
+                                onChange={(e) =>
+                                  setDateRange((prev) => ({
+                                    ...prev,
+                                    startDate: e.target.value,
+                                  }))
+                                }
+                                value={dateRange.startDate}
+                              />
+                              <input
+                                type="date"
+                                className="cursor-pointer flex items-center justify-between bg-gray-100 rounded-lg px-4 py-3 w-full"
+                                onChange={(e) =>
+                                  setDateRange((prev) => ({
+                                    ...prev,
+                                    endDate: e.target.value,
+                                  }))
+                                }
+                                value={dateRange.endDate}
+                              />
+                            </div>
                           </div>
                         </div>
 
