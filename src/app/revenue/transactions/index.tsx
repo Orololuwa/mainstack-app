@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetTransactionsQuery } from "@/redux/transactions/transactions.service";
+import { useTransactions } from "@/contexts/transactions.context";
 import { TransactionType } from "@/redux/transactions/types";
 import {
   ArrowUpIcon,
@@ -9,12 +9,19 @@ import {
   DownloadIcon,
   Button,
 } from "mainstack-library";
+import { useState } from "react";
+import FilterDrawer from "./filter";
 
 export default function Transactions() {
-  const { data, isFetching } = useGetTransactionsQuery(null, {
-    refetchOnMountOrArgChange: true,
-    refetchOnReconnect: true,
-  });
+  const { data, isFetching } = useTransactions();
+
+  const [isOpen, setOpen] = useState(false);
+  function onOpen() {
+    setOpen(true);
+  }
+  function onClose() {
+    setOpen(false);
+  }
 
   return (
     <div className="w-full max-w-6xl">
@@ -30,6 +37,7 @@ export default function Transactions() {
             <Button
               variant="secondary"
               className="flex items-center px-4 py-2 bg-gray-100 rounded-full gap-2"
+              onClick={onOpen}
             >
               <p>Filter</p>
               <CaretDownIcon />
@@ -92,6 +100,7 @@ export default function Transactions() {
             ))}
         </div>
       </div>
+      <FilterDrawer isOpen={isOpen} onClose={onClose} />
     </div>
   );
 }
